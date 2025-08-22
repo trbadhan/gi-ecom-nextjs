@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/context/AuthContext";   // <-- import
-import ProgressProvider from "@/components/ProgressProvider"; // <-- progress bar wrapper
+import { AuthProvider } from "@/context/AuthContext";
+import ProgressProvider from "@/components/ProgressProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-inter",   // ✅ custom variable
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -26,9 +22,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AuthProvider>     {/* ✅ now context is available everywhere */}
-          <ProgressProvider />  {/* ✅ global navigation progress bar */}
+      <body className={`${inter.variable} font-sans antialiased`}>
+        <AuthProvider>
+          <ProgressProvider />
           {children}
         </AuthProvider>
       </body>

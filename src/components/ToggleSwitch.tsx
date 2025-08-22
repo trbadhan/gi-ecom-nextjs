@@ -16,8 +16,8 @@ export default function ToggleSwitch({ enabled, onChange }: ToggleSwitchProps) {
       }`}
     >
       <span
-        className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-          enabled ? "translate-x-6" : "translate-x-1"
+        className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
+          enabled ? "translate-x-7" : "translate-x-1"
         }`}
       />
     </button>

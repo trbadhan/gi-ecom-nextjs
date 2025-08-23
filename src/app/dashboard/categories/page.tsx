@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { startProgress, stopProgress } from "@/lib/progress";
 import ToggleSwitch from "@/components/ToggleSwitch";
-import { Pencil, Trash2 } from "lucide-react";
+// import { Pencil, Trash2 } from "lucide-react";
 import { MdDoubleArrow, MdEdit } from "react-icons/md";
 import { AiOutlineDelete } from "react-icons/ai";
 
@@ -125,7 +125,7 @@ function updateCategoryTree(cats: Category[], id: number, enabled: boolean): Cat
 
   // Flatten categories + subcategories into single list
   function renderTree(cats: Category[]) {
-    const rows: JSX.Element[] = [];
+    const rows: React.ReactNode[] = [];
 
     function walk(catList: Category[]) {
       catList.forEach((cat) => {

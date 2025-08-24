@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Cairo } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import ProgressProvider from "@/components/ProgressProvider";
 
-const inter = Inter({
+const cairo = Cairo({
   subsets: ["latin"],
-  variable: "--font-inter",   // ✅ custom variable
+  variable: "--font-cairo",   // ✅ define variable
   display: "swap",
 });
 
@@ -22,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${cairo.variable} font-sans antialiased`}>
         <AuthProvider>
           <ProgressProvider />
           {children}

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { startProgress, stopProgress } from "@/lib/progress";
 import ToggleSwitch from "@/components/ToggleSwitch";
-// import { Pencil, Trash2 } from "lucide-react";
 import { MdDoubleArrow, MdEdit } from "react-icons/md";
 import { AiOutlineDelete } from "react-icons/ai";
 
@@ -13,6 +12,7 @@ type Category = {
   name: string;
   parent_id: number | null;
   is_active: boolean;
+  total_products?: number; // 👈 added in case API gives this
   children?: Category[];
 };
 
@@ -29,6 +29,7 @@ export default function CategoriesPage() {
   const [parentId, setParentId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [messageVisible, setMessageVisible] = useState(false);
 
   async function loadCategories() {
     const res = await apiFetch("/categories", { method: "GET" });
@@ -38,6 +39,23 @@ export default function CategoriesPage() {
   useEffect(() => {
     loadCategories();
   }, []);
+
+  // 🔥 Auto-clear success/error after 3s
+  useEffect(() => {
+    if (success || error) {
+      setMessageVisible(true);
+
+      const timer = setTimeout(() => {
+        setMessageVisible(false); // triggers exit
+        setTimeout(() => {
+          setSuccess(null);
+          setError(null);
+        }, 500); // wait for exit
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [success, error]);
 
   // Save / Update
   async function handleSubmit(e: React.FormEvent) {
@@ -86,6 +104,8 @@ export default function CategoriesPage() {
     setEditingId(cat.id);
     setName(cat.name);
     setParentId(cat.parent_id);
+    setEditCategory(cat);
+    setEditing(true);
   }
 
   // Delete
@@ -97,163 +117,191 @@ export default function CategoriesPage() {
 
   // Toggle Enable/Disable
   async function handleToggle(id: number, enabled: boolean) {
-  try {
-    await apiFetch(`/categories/${id}`, {
-      method: "PUT",
-      body: JSON.stringify({ is_active: enabled }),
-    });
+    try {
+      await apiFetch(`/categories/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ is_active: enabled }),
+      });
 
-    // 🔥 update both parent + children immediately
-    setCategories((prev) => updateCategoryTree(prev, id, enabled));
-  } catch (err) {
-    console.error("Failed to toggle category", err);
+      setCategories((prev) => updateCategoryTree(prev, id, enabled));
+    } catch (err) {
+      console.error("Failed to toggle category", err);
+    }
   }
-}
 
+  function updateCategoryTree(
+    cats: Category[],
+    id: number,
+    enabled: boolean
+  ): Category[] {
+    return cats.map((c) => {
+      if (c.id === id) {
+        return { ...c, is_active: enabled };
+      }
+      if (c.children && c.children.length > 0) {
+        return { ...c, children: updateCategoryTree(c.children, id, enabled) };
+      }
+      return c;
+    });
+  }
 
-function updateCategoryTree(cats: Category[], id: number, enabled: boolean): Category[] {
-  return cats.map((c) => {
-    if (c.id === id) {
-      return { ...c, is_active: enabled };
-    }
-    if (c.children && c.children.length > 0) {
-      return { ...c, children: updateCategoryTree(c.children, id, enabled) };
-    }
-    return c;
-  });
-}
-
-  // Flatten categories + subcategories into single list
+  // Flatten categories + subcategories into table rows
   function renderTree(cats: Category[]) {
     const rows: React.ReactNode[] = [];
 
-    function walk(catList: Category[]) {
+    function walk(catList: Category[], level = 0) {
       catList.forEach((cat) => {
         rows.push(
-          <li
+          <tr
             key={cat.id}
-            className={`border-b border-gray-200 px-4 py-2 bg-white
-                      ${highlightId === cat.id ? "animate-pulse bg-green-50" : ""}
-                      ${cat.is_active ? "text-gray-800" : "text-gray-400"}
-                    `}
+            className={`${highlightId === cat.id ? "animate-pulse bg-green-50" : ""}
+                        ${cat.is_active ? "text-gray-800" : "text-gray-400"}`}
           >
-            <div className="flex items-center justify-between">
-              {/* Left: name */}
-              <span
-                className={`${
-                  cat.parent_id ? "font-normal pl-8 flex items-center gap-2" : "font-normal flex items-center gap-2"
-                }`}
-              >
-                {cat.parent_id && (
-                  <MdDoubleArrow className="text-xs" />
-                )}
+            {/* Category Name */}
+            <td className="px-4 py-2">
+              <div className={`flex items-center gap-2`} style={{ paddingLeft: level * 16 }}>
+                {cat.parent_id && <MdDoubleArrow className="text-xs" />}
                 {cat.name}
-              </span>
-              {/* <span className={cat.parent_id ? "font-normal pl-8" : "font-normal"}>
-                {cat.parent_id && <MdDoubleArrow />} {cat.name}                
-              </span> */}
+              </div>
+            </td>
 
-              {/* Right: actions */}
-              <div className="flex space-x-3 text-sm">
+            {/* Total Products */}
+            <td className="px-4 py-2 text-center">
+              {cat.total_products ?? 0}
+            </td>
+
+            {/* Actions */}
+            <td className="px-4 py-2">
+              <div className="flex justify-end items-center space-x-3">
                 <button
                   onClick={() => handleEdit(cat)}
-                  className="text-blue-500 hover:underline" title="Edit"
-                >                  
+                  className="text-blue-400 cursor-pointer"
+                  title="Edit"
+                >
                   <MdEdit size={18} />
                 </button>
                 <button
                   onClick={() => handleDelete(cat.id)}
-                  className="text-red-600 hover:underline" title="Delete"
+                  className="text-red-400 cursor-pointer"
+                  title="Delete"
                 >
                   <AiOutlineDelete size={18} />
                 </button>
-                {/* Toggle switch */}
                 <ToggleSwitch
-                  enabled={cat.is_active} // you need is_active in your API
+                  enabled={cat.is_active}
                   onChange={(value) => handleToggle(cat.id, value)}
                 />
               </div>
-            </div>
-          </li>
+            </td>
+          </tr>
         );
 
-        // keep recursing, but still push to flat rows (not nested)
         if (cat.children && cat.children.length > 0) {
-          walk(cat.children);
+          walk(cat.children, level + 1); // 👈 indent subcategories
         }
       });
     }
 
     walk(cats);
 
-    return <ul className="space-y-0">{rows}</ul>;
+    return (
+      <table className="w-full border-collapse">
+        <thead className="bg-gray-50 border-b border-gray-300">
+          <tr className="text-gray-700 font-semibold">
+            <th className="px-4 py-2 text-left w-1/2">Category Name</th>
+            <th className="px-4 py-2 text-center w-1/4">Total Products</th>
+            <th className="px-4 py-2 text-right w-1/4">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">{rows}</tbody>
+      </table>
+    );
   }
 
   return (
     <div className="grid grid-cols-12 gap-6">
-  {/* Left side: Category List */}
-  <div className="col-span-8 bg-white rounded shadow">
-    {/* Title bar */}
-    <div className="border-b px-4 py-3 bg-gray-50 font-semibold text-gray-800">
-      Categories
-    </div>
+      {/* Left side: Category List */}
+      <div className="col-span-8 bg-white rounded shadow">
+        <div className="border-b border-blue-400 px-4 py-3 bg-white font-bold text-lg text-gray-500">
+          Categories
+        </div>
+        <div className="p-0">{renderTree(categories)}</div>
+      </div>
 
-    {/* List */}
-    <div className="p-0">
-      {renderTree(categories)}
-    </div>
-  </div>
+      {/* Right side: Category Form */}
+      <div className="col-span-4">
+        <div className="bg-white rounded shadow h-[280px] overflow-y-auto">
+          <div className="border-b px-4 py-3 bg-gray-50 font-bold text-gray-800">
+            {editing ? `Edit Category: ${editCategory?.name}` : "Add Category"}
+          </div>
 
-  {/* Right side: Category Form */}
-  <div className="col-span-4 bg-white rounded shadow">
-    {/* Title bar */}
-    <div className="border-b px-4 py-3 bg-gray-50 font-semibold text-gray-800">
-      {editing ? `Edit Category: ${editCategory?.name}` : "Add Category"}
-    </div>
+          <div className="p-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Category Name */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Category Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full border rounded p-2"
+                  placeholder="Enter category name"
+                  required
+                />
+              </div>
 
-    {/* Form */}
-    <div className="p-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Category Name */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Category Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full border rounded p-2"
-            placeholder="Enter category name"
-            required
-          />
+              {/* Parent Category */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Parent Category (optional)
+                </label>
+                <select
+                  value={parentId ?? ""}
+                  onChange={(e) =>
+                    setParentId(e.target.value ? Number(e.target.value) : null)
+                  }
+                  className="w-full border rounded p-2"
+                >
+                  <option value="">None (Main Category)</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-blue-400 text-white py-2 rounded hover:bg-blue-500 cursor-pointer"
+              >
+                {editing ? "Update Category" : "Save Category"}
+              </button>
+            </form>
+          </div>
         </div>
 
-        {/* Parent Category */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Parent Category (optional)</label>
-          <select
-            value={parentId ?? ""}
-            onChange={(e) => setParentId(e.target.value ? Number(e.target.value) : null)}
-            className="w-full border rounded p-2"
-          >
-            <option value="">None (Main Category)</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
+          {/* ✅ Success / Error Messages under the card */}
+          {success && (
+            <div
+              className={`mt-3 p-2 rounded bg-green-100 text-green-700 text-sm shadow
+                transform transition-all duration-500 ease-in-out
+                ${messageVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"}`}
+            >
+              {success}
+            </div>
+          )}
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          {editing ? "Update Category" : "Save Category"}
-        </button>
-      </form>
+          {error && (
+            <div
+              className={`mt-3 p-2 rounded bg-red-100 text-red-700 text-sm shadow
+                transform transition-all duration-500 ease-in-out
+                ${messageVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"}`}
+            >
+              {error}
+            </div>
+          )}
+      </div>
     </div>
-  </div>
-</div>
-
   );
 }

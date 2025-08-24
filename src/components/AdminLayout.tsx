@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 bg-white border-b shadow-sm z-50">
+      <header className="sticky top-0 bg-white border-b border-gray-100 shadow-sm z-50">
         <div className="flex justify-between items-center px-6 py-3">
           <div className="font-bold text-lg">
             <Link href="/dashboard">🚗 Gari Admin</Link>

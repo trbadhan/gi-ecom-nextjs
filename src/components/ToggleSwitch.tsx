@@ -11,12 +11,13 @@ export default function ToggleSwitch({ enabled, onChange }: ToggleSwitchProps) {
     <button
       type="button"
       onClick={() => onChange(!enabled)}
-      className={`relative inline-flex h-4 w-10 items-center rounded-full transition-colors ${
-        enabled ? "bg-blue-400" : "bg-gray-400"
+      title={enabled ? "Disable this item" : "Enable this item"}
+      className={`cursor-pointer relative inline-flex h-4 w-10 items-center rounded-full transition-colors ${
+        enabled ? "bg-blue-400" : "bg-gray-300"
       }`}
     >
       <span
-        className={`inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
+        className={`cursor-pointer inline-block h-2 w-2 transform rounded-full bg-white transition-transform ${
           enabled ? "translate-x-7" : "translate-x-1"
         }`}
       />

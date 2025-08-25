@@ -205,9 +205,9 @@ export default function CategoriesPage() {
     walk(cats);
 
     return (
-      <table className="w-full border-collapse">
+      <table className="w-full border-collapse text-sm ">
         <thead className="bg-gray-50 border-b border-gray-300">
-          <tr className="text-gray-700 font-semibold">
+          <tr className="text-gray-700">
             <th className="px-4 py-2 text-left w-1/2">Category Name</th>
             <th className="px-4 py-2 text-center w-1/4">Total Products</th>
             <th className="px-4 py-2 text-right w-1/4">Action</th>
@@ -230,8 +230,8 @@ export default function CategoriesPage() {
 
       {/* Right side: Category Form */}
       <div className="col-span-4">
-        <div className="bg-white rounded shadow h-[280px] overflow-y-auto">
-          <div className="border-b px-4 py-3 bg-gray-50 font-bold text-gray-800">
+        <div className="bg-white rounded shadow h-[285px] overflow-y-auto">
+          <div className="border-b border-blue-400 px-4 py-3 bg-white font-bold text-lg text-gray-500">
             {editing ? `Edit Category: ${editCategory?.name}` : "Add Category"}
           </div>
 
@@ -239,12 +239,12 @@ export default function CategoriesPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Category Name */}
               <div>
-                <label className="block text-sm font-medium mb-1">Category Name</label>
+                <label className="block text-sm text-gray-700 font-medium mb-1">Category Name</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full border rounded p-2"
+                  className="w-full border border-gray-100 hover:border-gray-200 focus:border-gray-400 outline-none placeholder:text-sm rounded p-2"
                   placeholder="Enter category name"
                   required
                 />
@@ -252,7 +252,7 @@ export default function CategoriesPage() {
 
               {/* Parent Category */}
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm text-gray-700 font-medium mb-1">
                   Parent Category (optional)
                 </label>
                 <select
@@ -260,7 +260,7 @@ export default function CategoriesPage() {
                   onChange={(e) =>
                     setParentId(e.target.value ? Number(e.target.value) : null)
                   }
-                  className="w-full border rounded p-2"
+                  className="w-full border border-gray-100 hover:border-gray-200 focus:border-gray-400 outline-none rounded p-2 text-sm"
                 >
                   <option value="">None (Main Category)</option>
                   {categories.map((cat) => (

@@ -22,8 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   async function handleLogout() {
   try {
     startProgress();
-    await logout();  // clears token + admin
-    // ❌ no router.replace("/login") here
+    await logout();
   } finally {
     stopProgress();
   }
@@ -37,7 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/dashboard">🚗 Gari Admin</Link>
           </div>
 
-          <nav className="flex items-center space-x-2">
+          <nav className="flex items-center space-x-2 text-sm font-bold">
             <Link href="/dashboard"><div className={navClass("/dashboard")}>Dashboard</div></Link>
             <Link href="/dashboard/users"><div className={navClass("/dashboard/users")}>Users</div></Link>
             <Link href="/dashboard/orders"><div className={navClass("/dashboard/orders")}>Orders</div></Link>
@@ -58,19 +57,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/dashboard/settings"><div className={navClass("/dashboard/settings")}>Settings</div></Link>
 
             {/* User dropdown */}
-            <div className="relative group">
+            <div className="relative group text-gray-700">
               <button className="px-3 py-2 rounded hover:bg-gray-100 flex items-center">
                 {loading ? (
                   <span className="inline-block w-16 h-4 animate-pulse bg-gray-200 rounded"></span>
                 ) : (
-                  <span>{admin?.username || "Admin"}</span>
+                  <span>Profile</span>
                 )}
                 <span className="ml-1">▾</span>
               </button>
 
               <div className="absolute right-0 top-full hidden group-hover:block bg-white shadow rounded w-40 z-50">
                 <Link href="/dashboard/profile" className="block px-4 py-2 hover:bg-gray-100 text-left">
-                  Profile
+                  <span className="uppercase">{admin?.username || "Admin"}</span>
                 </Link>
                 <button
                   onClick={handleLogout}

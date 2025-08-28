@@ -6,6 +6,7 @@ import { startProgress, stopProgress } from "@/lib/progress";
 import ToggleSwitch from "@/components/ToggleSwitch";
 import { MdDoubleArrow, MdEdit } from "react-icons/md";
 import { AiOutlineDelete } from "react-icons/ai";
+// import CategoryList from "@/components/CategoryList";
 
 type Category = {
   id: number;
@@ -15,6 +16,15 @@ type Category = {
   total_products?: number; // 👈 added in case API gives this
   children?: Category[];
 };
+
+// export default function CategoriesPage() {
+//   return (
+//     <div className="p-6">
+//       <h1 className="text-xl font-bold mb-4">Categories</h1>
+//       <CategoryList />
+//     </div>
+//   );
+// }
 
 export default function CategoriesPage() {
   const [editing, setEditing] = useState(false);
@@ -219,7 +229,7 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="grid grid-cols-12 gap-6">
+    <div className="grid grid-cols-12 gap-6 items-start">
       {/* Left side: Category List */}
       <div className="col-span-8 bg-white rounded shadow">
         <div className="border-b border-blue-400 px-4 py-3 bg-white font-bold text-lg text-gray-500">
@@ -230,7 +240,7 @@ export default function CategoriesPage() {
 
       {/* Right side: Category Form */}
       <div className="col-span-4">
-        <div className="bg-white rounded shadow h-[285px] overflow-y-auto">
+        <div className="bg-white rounded shadow">
           <div className="border-b border-blue-400 px-4 py-3 bg-white font-bold text-lg text-gray-500">
             {editing ? `Edit Category: ${editCategory?.name}` : "Add Category"}
           </div>
